@@ -6,6 +6,8 @@ See here for level file versions: https://github.com/Moburma/SWInspector/blob/ma
 
 Most things in a level can already edited.
 
+Full instructions will follow.
+
 Hints:
 * Click the left mouse button on the map to freeze the coordinates at current map position
 * Top Coordinates are for Things, bottom are for Objectives/Netscan
