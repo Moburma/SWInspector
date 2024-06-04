@@ -874,6 +874,7 @@ function AdvancedMode(){
     $datagridview.Columns[22].Visible = $op;
     $datagridview.Columns[23].Visible = $op;
     $datagridview.Columns[24].Visible = $op;
+    $datagridview.Columns[25].Visible = $op;
     $datagridview.Columns[32].Visible = $op;
     $datagridview.Columns[33].Visible = $op;
     $datagridview.Columns[34].Visible = $op;
@@ -2908,6 +2909,7 @@ $datagridview.Columns[5].Visible = $false; #Hide original charactername column
 $datagridview.Columns[7].Visible = $false; #Hide original Vehicletype column
 $datagridview.Columns[100].DisplayIndex = 0
 $datagridview.Columns[101].DisplayIndex = 1
+$datagridview.Columns[60].DisplayIndex = 19
 
 $Charactercombo  = @("Invalid","Agent","Zealot", "Unguided Female", "Civ - Briefcase Man", "Civ - White Dress Woman", "Soldier/Mercenary", "Mechanical Spider", "Police", "Unguided Male", "Scientist", "Shady Guy", "Elite Zealot", "Civ - Blonde Woman 1", "Civ - Leather Jacket Man", "Civ - Blonde Woman 2", "Ground Car", "Flying vehicle", "Tank", "Ship", "Moon Mech")
 
