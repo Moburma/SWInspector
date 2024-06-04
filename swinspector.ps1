@@ -2199,7 +2199,7 @@ for ($i = 0; $i -lt 8; $i++) {
 
 [void][reflection.assembly]::LoadWithPartialName( "System.Windows.Forms")
 $form = New-Object Windows.Forms.Form
-$form.text = "SWLevelEdit  v0.1  By Moburma"
+$form.text = "SWInspector  v0.1  By Moburma"
 $Form.Location= New-Object System.Drawing.Size(100,100)
 $Form.Size= New-Object System.Drawing.Size(1920,900)
 
