@@ -242,7 +242,7 @@ function identifycommand($commandtype){ #Returns what the command name is
         142 = 'PLAY_SAMPLE'
         143 = 'IGNORE_ENEMIES'
         144 = 'FULL_STAMINA'
-        145 = 'ROTATE_CAMERA'
+        145 = 'CAMERA_ROTATE'
     }
 
     $result = $commandDict[$commandtype]
@@ -823,8 +823,6 @@ foreach ($ThingType in $groupedTable) {
 }
 
 }
-
-
 function SortLinkSameGroup{
 
     # Initialize the LinkSameGroup field to 0
@@ -853,6 +851,54 @@ foreach ($group in $groupednonvehicles) {
         }
     }
 }
+}
+
+function MarkUnusedRows(){
+   #Check to see if a command/chain is unused and mark it as such
+   $numRowsDataGridView = $datagridview.Rows.Count
+$numRowsCommandGridView = $commandgridview.Rows.Count
+
+# Create a hashset to keep track of referenced command numbers
+$referencedCommands = @{}
+
+# Add rows referenced by ComHead in $datagridview
+for ($i = 0; $i -lt $numRowsDataGridView; $i++) {
+    $comHeadValue = $datagridview.Rows[$i].Cells["ComHead"].Value
+    if ($comHeadValue -ne 0) {
+        $referencedCommands[$comHeadValue] = $true
+        # Traverse the chain in $commandgridview
+        $nextValue = $null
+        for ($j = 0; $j -lt $numRowsCommandGridView; $j++) {
+            if ($commandgridview.Rows[$j].Cells["commandno"].Value -eq $comHeadValue) {
+                $nextValue = $commandgridview.Rows[$j].Cells["next"].Value
+                break
+            }
+        }
+        while ($nextValue -ne 0 -and $nextValue -ne $null) {
+            $referencedCommands[$nextValue] = $true
+            $currentValue = $nextValue
+            $nextValue = $null
+            for ($j = 0; $j -lt $numRowsCommandGridView; $j++) {
+                if ($commandgridview.Rows[$j].Cells["commandno"].Value -eq $currentValue) {
+                    $nextValue = $commandgridview.Rows[$j].Cells["next"].Value
+                    break
+                }
+            }
+        }
+    }
+}
+
+# Find rows in $commandgridview that are not referenced and mark them grey
+for ($j = 0; $j -lt $numRowsCommandGridView; $j++) {
+    $commandNo = $commandgridview.Rows[$j].Cells["commandno"].Value
+    if (-not $referencedCommands.ContainsKey($commandNo)) {
+        $commandgridview.Rows[$j].DefaultCellStyle.BackColor = [System.Drawing.Color]::Gray
+    }
+}
+
+# Refresh the $commandgridview to show the changes
+$commandgridview.Refresh()
+   
 }
 
 function AdvancedMode(){
@@ -1867,6 +1913,9 @@ City: $global:cityname
     $ThingCountlabel.Text = "Things: $Thingcount 
 Commands: $Commandcount 
 Items: $ItemCount"
+
+MarkUnusedRows
+
 }
 
 
@@ -2745,6 +2794,8 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
                 $datagridview.Rows[$_.RowIndex].Cells[83].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][11] #Update Energy
                 $datagridview.Rows[$_.RowIndex].Cells[89].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][12] #Update Stamina
                 $datagridview.Rows[$_.RowIndex].Cells[90].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][13] #Update Maxstamina
+                $datagridview.Rows[$_.RowIndex].Cells[0].Value = 0 #parent
+                $datagridview.Rows[$_.RowIndex].Cells[1].Value = 0 #child
                 $datagridview.Rows[$_.RowIndex].Cells[8].Value = 0 #Update State
                 $datagridview.Rows[$_.RowIndex].Cells[9].Value = 67108868 #Update Flag
                 $datagridview.Rows[$_.RowIndex].Cells[19].Value = 0 #Zero out weaponscarried
@@ -2799,7 +2850,7 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
     if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'VehicleType') #If updating VEhicleType, update StartFrame to match
         {
             
-            $datagridview.Rows[$_.RowIndex].Cells[22].Value = identifyvehicle($datagridview.Rows[$_.RowIndex].Cells[$_.ColumnIndex].Value)
+            $datagridview.Rows[$_.RowIndex].Cells[23].Value = identifyvehicle($datagridview.Rows[$_.RowIndex].Cells[$_.ColumnIndex].Value)
 
             $datagridview.Rows[$_.RowIndex].Cells[6].Value = 2    #Also reset the ThingType to vehicle value so we don't get errors 
             
@@ -2982,7 +3033,7 @@ $commandGridview.Columns[5].Width = 60
 $commandGridview.Columns[6].Width = 60
 $commandGridview.Columns[7].Width = 200
 
-$commandCombo = @('NONE', 'STAY', 'GO_TO_POINT', 'GO_TO_PERSON', 'KILL_PERSON', 'KILL_MEM_GROUP', 'KILL_ALL_GROUP', 'PERSUADE_PERSON', 'PERSUADE_MEM_GROUP', 'PERSUADE_ALL_GROUP', 'BLOCK_PERSON', 'SCARE_PERSON', 'FOLLOW_PERSON', 'SUPPORT_PERSON', 'PROTECT_PERSON', 'HIDE', 'GET_ITEM', 'USE_WEAPON', 'DROP_SPEC_ITEM', 'AVOID_PERSON', 'WAND_AVOID_GROUP', 'DESTROY_BUILDING', '16', 'USE_VEHICLE', 'EXIT_VEHICLE', 'CATCH_TRAIN', 'OPEN_DOME', 'CLOSE_DOME', 'DROP_WEAPON', 'CATCH_FERRY', 'EXIT_FERRY', 'PING_EXIST', 'GOTOPOINT_FACE', 'SELF_DESTRUCT', 'PROTECT_MEM_G', 'RUN_TO_POINT', 'KILL_EVERYONE', 'GUARD_OFF', 'EXECUTE_COMS', '27', '32', 'WAIT_P_V_DEAD', 'WAIT_MEM_G_DEAD', 'WAIT_ALL_G_DEAD', 'WAIT_P_V_I_NEAR', 'WAIT_MEM_G_NEAR', 'WAIT_ALL_G_NEAR', 'WAIT_P_V_I_ARRIVES', 'WAIT_MEM_G_ARRIVE', 'WAIT_ALL_G_ARRIVE', 'WAIT_P_PERSUADED', 'WAIT_MEM_G_PERSUADED', 'WAIT_ALL_G_PERSUADED', 'WAIT_MISSION_SUCC', 'WAIT_MISSION_FAIL', 'WAIT_MISSION_START', 'WAIT_OBJECT_DESTROYED', 'WAIT_TIME', 'WAND_P_V_DEAD', 'WAND_MEM_G_DEAD', 'WAND_ALL_G_DEAD', 'WAND_P_V_I_NEAR', 'WAND_MEM_G_NEAR', 'WAND_ALL_G_NEAR', 'WAND_P_V_I_ARRIVES', 'WAND_MEM_G_ARRIVE', 'WAND_ALL_G_ARRIVE', 'WAND_P_PERSUADED', 'WAND_MEM_G_PERSUADED', 'WAND_ALL_G_PERSUADED', 'WAND_MISSION_SUCC', 'WAND_MISSION_FAIL', 'WAND_MISSION_START', 'WAND_OBJECT_DESTROYED', 'WAND_TIME', 'LOOP_COM', 'UNTIL_P_V_DEAD', 'UNTIL_MEM_G_DEAD', 'UNTIL_ALL_G_DEAD', 'UNTIL_P_V_I_NEAR', 'UNTIL_MEM_G_NEAR', 'UNTIL_ALL_G_NEAR', 'UNTIL_P_V_I_ARRIVES', 'UNTIL_MEM_G_ARRIVE', 'UNTIL_ALL_G_ARRIVE', 'UNTIL_P_PERSUADED', 'UNTIL_MEM_G_PERSUADED', 'UNTIL_ALL_G_PERSUADED', 'UNTIL_MISSION_SUCC', 'UNTIL_MISSION_FAIL', 'UNTIL_MISSION_START', 'UNTIL_OBJECT_DESTROYED', 'UNTIL_TIME', 'WAIT_OBJ', 'WAND_OBJ', 'UNTIL_OBJ', 'WITHIN_AREA', 'WITHIN_OFF', 'LOCK_BUILD', 'UNLOCK_BUILD', 'SELECT_WEAPON', 'HARD_AS_AGENT', 'UNTIL_G_NOT_SEEN', 'START_DANGER_MUSIC', 'PING_P_V', 'CAMERA_TRACK', 'UNTRUCE_GROUP', 'PLAY_SAMPLE', 'IGNORE_ENEMIES', 'FULL_STAMINA', 'ROTATE_CAMERA')
+$commandCombo = @('NONE', 'STAY', 'GO_TO_POINT', 'GO_TO_PERSON', 'KILL_PERSON', 'KILL_MEM_GROUP', 'KILL_ALL_GROUP', 'PERSUADE_PERSON', 'PERSUADE_MEM_GROUP', 'PERSUADE_ALL_GROUP', 'BLOCK_PERSON', 'SCARE_PERSON', 'FOLLOW_PERSON', 'SUPPORT_PERSON', 'PROTECT_PERSON', 'HIDE', 'GET_ITEM', 'USE_WEAPON', 'DROP_SPEC_ITEM', 'AVOID_PERSON', 'WAND_AVOID_GROUP', 'DESTROY_BUILDING', '16', 'USE_VEHICLE', 'EXIT_VEHICLE', 'CATCH_TRAIN', 'OPEN_DOME', 'CLOSE_DOME', 'DROP_WEAPON', 'CATCH_FERRY', 'EXIT_FERRY', 'PING_EXIST', 'GOTOPOINT_FACE', 'SELF_DESTRUCT', 'PROTECT_MEM_G', 'RUN_TO_POINT', 'KILL_EVERYONE', 'GUARD_OFF', 'EXECUTE_COMS', '27', '32', 'WAIT_P_V_DEAD', 'WAIT_MEM_G_DEAD', 'WAIT_ALL_G_DEAD', 'WAIT_P_V_I_NEAR', 'WAIT_MEM_G_NEAR', 'WAIT_ALL_G_NEAR', 'WAIT_P_V_I_ARRIVES', 'WAIT_MEM_G_ARRIVE', 'WAIT_ALL_G_ARRIVE', 'WAIT_P_PERSUADED', 'WAIT_MEM_G_PERSUADED', 'WAIT_ALL_G_PERSUADED', 'WAIT_MISSION_SUCC', 'WAIT_MISSION_FAIL', 'WAIT_MISSION_START', 'WAIT_OBJECT_DESTROYED', 'WAIT_TIME', 'WAND_P_V_DEAD', 'WAND_MEM_G_DEAD', 'WAND_ALL_G_DEAD', 'WAND_P_V_I_NEAR', 'WAND_MEM_G_NEAR', 'WAND_ALL_G_NEAR', 'WAND_P_V_I_ARRIVES', 'WAND_MEM_G_ARRIVE', 'WAND_ALL_G_ARRIVE', 'WAND_P_PERSUADED', 'WAND_MEM_G_PERSUADED', 'WAND_ALL_G_PERSUADED', 'WAND_MISSION_SUCC', 'WAND_MISSION_FAIL', 'WAND_MISSION_START', 'WAND_OBJECT_DESTROYED', 'WAND_TIME', 'LOOP_COM', 'UNTIL_P_V_DEAD', 'UNTIL_MEM_G_DEAD', 'UNTIL_ALL_G_DEAD', 'UNTIL_P_V_I_NEAR', 'UNTIL_MEM_G_NEAR', 'UNTIL_ALL_G_NEAR', 'UNTIL_P_V_I_ARRIVES', 'UNTIL_MEM_G_ARRIVE', 'UNTIL_ALL_G_ARRIVE', 'UNTIL_P_PERSUADED', 'UNTIL_MEM_G_PERSUADED', 'UNTIL_ALL_G_PERSUADED', 'UNTIL_MISSION_SUCC', 'UNTIL_MISSION_FAIL', 'UNTIL_MISSION_START', 'UNTIL_OBJECT_DESTROYED', 'UNTIL_TIME', 'WAIT_OBJ', 'WAND_OBJ', 'UNTIL_OBJ', 'WITHIN_AREA', 'WITHIN_OFF', 'LOCK_BUILD', 'UNLOCK_BUILD', 'SELECT_WEAPON', 'HARD_AS_AGENT', 'UNTIL_G_NOT_SEEN', 'START_DANGER_MUSIC', 'PING_P_V', 'CAMERA_TRACK', 'UNTRUCE_GROUP', 'PLAY_SAMPLE', 'IGNORE_ENEMIES', 'FULL_STAMINA', 'CAMERA_ROTATE')
 
 $CommandNameColumn = New-Object System.Windows.Forms.DataGridViewComboBoxColumn   #Define CharacterName Combobox
 $CommandNameColumn.width = 80
