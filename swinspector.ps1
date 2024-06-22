@@ -2857,10 +2857,10 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
 
         }
     if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'Invisible') { #Update Flag2 value if tickbox is changed
-            if ($datagridview.Rows[$_.RowIndex].Cells[100].Value -eq $true){
+            if ($datagridview.Rows[$_.RowIndex].Cells[100].Value -eq $true -and $datagridview.Rows[$_.RowIndex].Cells[35].Value -lt 16777216){
                 $datagridview.Rows[$_.RowIndex].Cells[35].Value = ($datagridview.Rows[$_.RowIndex].Cells[35].Value) + 16777216
             }
-            if ($datagridview.Rows[$_.RowIndex].Cells[100].Value -eq $false){
+            if ($datagridview.Rows[$_.RowIndex].Cells[100].Value -eq $false -and $datagridview.Rows[$_.RowIndex].Cells[35].Value -ge 16777216){
                 $datagridview.Rows[$_.RowIndex].Cells[35].Value = ($datagridview.Rows[$_.RowIndex].Cells[35].Value) - 16777216
             }
     }
