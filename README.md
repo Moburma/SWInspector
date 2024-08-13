@@ -2,7 +2,7 @@
 Tool written in PowerShell 5 to inspect and edit level files from the Bullfrog Productions game Syndicate Wars
 
 Can open, edit, and save all version 15+ format level files from the game (one level doesn't work, this is due to a non-standard commands header, may need special-casing). Pre-alpha levels are not supported yet, but may be later.
-See here for level file versions: https://github.com/Moburma/SWInspector/blob/main/SWMaps/screenshot.png?raw=true
+See here for level file versions: https://tcrf.net/Notes:Syndicate_Wars_(DOS)#Level_File_Versions
 
 Most things in a level can already edited.
 
