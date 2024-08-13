@@ -2802,7 +2802,8 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
                 $datagridview.Rows[$_.RowIndex].Cells[26].Value = 0 #vx
                 $datagridview.Rows[$_.RowIndex].Cells[27].Value = 0 #vy 
                 $datagridview.Rows[$_.RowIndex].Cells[28].Value = 0 #vz
-                
+                $datagridview.Rows[$_.RowIndex].Cells[20].Value = "Unarmed"  #weapons inventory
+                $datagridview.Rows[$_.RowIndex].Cells[21].Value = "No Mods"  #mod inventory
 
             }
 
@@ -2830,19 +2831,19 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
 
             if ($datagridview.Rows[$_.RowIndex].Cells[4].Value -lt 16){  #If a character and not a vehicle, add stats automatically
                 $datagridview.Rows[$_.RowIndex].Cells[12].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][0] #Update Radius
-                $datagridview.Rows[$_.RowIndex].Cells[21].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][1] #Update Frame
-                $datagridview.Rows[$_.RowIndex].Cells[22].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][2] #Update StartFrame
-                $datagridview.Rows[$_.RowIndex].Cells[23].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][3] #Update Timer1
-                $datagridview.Rows[$_.RowIndex].Cells[24].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][4] #Update StartTimer1
-                $datagridview.Rows[$_.RowIndex].Cells[28].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][5] #Update Speed
-                $datagridview.Rows[$_.RowIndex].Cells[29].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][6] #Update Health
-                $datagridview.Rows[$_.RowIndex].Cells[68].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][7] #Update MaxHealth
-                $datagridview.Rows[$_.RowIndex].Cells[71].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][8] #Update ShieldEnergy
-                $datagridview.Rows[$_.RowIndex].Cells[79].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][9] #Update MaxShieldEnergy
-                $datagridview.Rows[$_.RowIndex].Cells[81].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][10] #Update MaxEnergy
-                $datagridview.Rows[$_.RowIndex].Cells[82].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][11] #Update Energy
-                $datagridview.Rows[$_.RowIndex].Cells[88].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][12] #Update Stamina
-                $datagridview.Rows[$_.RowIndex].Cells[89].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][13] #Update Maxstamina
+                $datagridview.Rows[$_.RowIndex].Cells[22].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][1] #Update Frame
+                $datagridview.Rows[$_.RowIndex].Cells[23].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][2] #Update StartFrame
+                $datagridview.Rows[$_.RowIndex].Cells[24].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][3] #Update Timer1
+                $datagridview.Rows[$_.RowIndex].Cells[25].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][4] #Update StartTimer1
+                $datagridview.Rows[$_.RowIndex].Cells[29].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][5] #Update Speed
+                $datagridview.Rows[$_.RowIndex].Cells[30].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][6] #Update Health
+                $datagridview.Rows[$_.RowIndex].Cells[69].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][7] #Update MaxHealth
+                $datagridview.Rows[$_.RowIndex].Cells[72].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][8] #Update ShieldEnergy
+                $datagridview.Rows[$_.RowIndex].Cells[80].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][9] #Update MaxShieldEnergy
+                $datagridview.Rows[$_.RowIndex].Cells[82].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][10] #Update MaxEnergy
+                $datagridview.Rows[$_.RowIndex].Cells[83].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][11] #Update Energy
+                $datagridview.Rows[$_.RowIndex].Cells[89].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][12] #Update Stamina
+                $datagridview.Rows[$_.RowIndex].Cells[90].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][13] #Update Maxstamina
 
             }
         }
@@ -2853,7 +2854,6 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
             $datagridview.Rows[$_.RowIndex].Cells[23].Value = identifyvehicle($datagridview.Rows[$_.RowIndex].Cells[$_.ColumnIndex].Value)
 
             $datagridview.Rows[$_.RowIndex].Cells[6].Value = 2    #Also reset the ThingType to vehicle value so we don't get errors 
-            
 
         }
     if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'Invisible') { #Update Flag2 value if tickbox is changed
