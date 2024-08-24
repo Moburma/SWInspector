@@ -1961,6 +1961,22 @@ function CloneThingRow(){
 
 }
 
+function PasteThingCoords(){  #Paste current frozen mouse coordinates into Map X and Z for currently selected Thing to save typing
+    if ($dataGridView.SelectedCells.Count -eq 0) {
+        [System.Windows.Forms.MessageBox]::Show("Please select a Thing to paste coords to.", "Information", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        return
+    }
+
+   # Get the selected DataRowView
+   $selectedRowView = $dataGridView.CurrentCell.RowIndex
+
+    #write-host "row is $selectedRowView"
+
+   $x = $global:lastMousePosition.X
+   $y = $global:lastMousePosition.Y
+   $datagridview.Rows[$selectedRowView].Cells[14].Value = ($x * 32768) #Update Map X coordinate from mouse X
+   $datagridview.Rows[$selectedRowView].Cells[16].Value = ($y * 32768) #Update Map Z coordinate from mouse Y
+}
 function CloneCommandNewRow(){
 
     if ($CommandGridView.SelectedCells.Count -eq 0) {
@@ -2701,6 +2717,14 @@ $CloneThing.Text = "Clone Thing"
 $Form.Controls.Add($CloneThing)
 $CloneThing.Add_Click($CloneThing_Click)
 
+$PasteThingCo_click = {PasteThingCoords}
+
+$PasteThingCo = New-Object System.Windows.Forms.Button
+$PasteThingCo.Location = New-Object System.Drawing.Size(160,430)
+$PasteThingCo.Size = New-Object System.Drawing.Size(110,23)
+$PasteThingCo.Text = "Paste Thing Coord"
+$Form.Controls.Add($PasteThingCo)
+$PasteThingCo.Add_Click($PasteThingCo_Click)
 
 $CloneNewCommand_click = {CloneCommandNewRow}
 
@@ -2820,7 +2844,7 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
     if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'Type') #If updating Type, update CharacterName to match
         {
 
-            $datagridview.Rows[$_.RowIndex].Cells[95].Value = identifycharacter($datagridview.Rows[$_.RowIndex].Cells[$_.ColumnIndex].Value)
+            $datagridview.Rows[$_.RowIndex].Cells[5].Value = identifycharacter($datagridview.Rows[$_.RowIndex].Cells[$_.ColumnIndex].Value)
 
             if ($datagridview.Rows[$_.RowIndex].Cells[4].Value -gt 15){
                 $datagridview.Rows[$_.RowIndex].Cells[6].Value = 2    #Also reset the ThingType to vehicle value so we don't get errors 
