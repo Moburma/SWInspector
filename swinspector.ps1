@@ -1959,6 +1959,23 @@ function CloneThingRow(){
    # Add the new DataRow to the DataTable
    $dataTable.Rows.Add($newRow)
 
+   # Get the last row (which is the newly added row)
+   $lastRowIndex = $dataTable.Rows.Count - 1
+   $lastRow = $dataTable.Rows[$lastRowIndex]
+
+   # Get the previous row (before the newly added row)
+   $previousRow = $dataTable.Rows[$lastRowIndex - 1]
+
+   # Update the UniqueID and ThingOffset in the new row
+   if ($previousRow["Type"] -eq 51 -or $previousRow["Type"] -eq 59 ){   #if is a tank or mech vehicle previously, skip a number as it actually takes up TWO things
+    $lastRow["UniqueID"] = [int]$previousRow["UniqueID"] + 2
+    $lastRow["ThingOffset"] = [int]$previousRow["ThingOffset"] + 2
+   }
+   Else{
+   $lastRow["UniqueID"] = [int]$previousRow["UniqueID"] + 1
+   $lastRow["ThingOffset"] = [int]$previousRow["ThingOffset"] + 1
+   }
+   $dataTable.AcceptChanges()
 }
 
 function PasteThingCoords(){  #Paste current frozen mouse coordinates into Map X and Z for currently selected Thing to save typing
