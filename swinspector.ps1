@@ -1734,14 +1734,54 @@ function LoadLevel(){
     $KillIfWeaponOut = convert32bitint $levfile[$fpos+4] $levfile[$fpos+5] $levfile[$fpos+6] $levfile[$fpos+7]
     $KillIfArmed = convert32bitint $levfile[$fpos+8] $levfile[$fpos+9]  $levfile[$fpos+10] $levfile[$fpos+11]
     $Truce = convert32bitint $levfile[$fpos+12] $levfile[$fpos+13] $levfile[$fpos+14] $levfile[$fpos+15]
-    $Guardians1 = $levfile[$fpos+16]
-    $Guardians2 = $levfile[$fpos+17]
-    $Guardians3 = $levfile[$fpos+18]
-    $Guardians4 = $levfile[$fpos+19]
-    $Guardians5 = $levfile[$fpos+20]
-    $Guardians6 = $levfile[$fpos+21]
-    $Guardians7 = $levfile[$fpos+22]
-    $Guardians8 = $levfile[$fpos+23]
+    if ($levfile[$fpos+16] -gt 31){  #Clamp group Guardian numbers between 0 and 31, some older levels seem to have nonsense values of 255 here
+        $Guardians1 = 0
+    }
+    Else{
+        $Guardians1 = $levfile[$fpos+16]
+    }
+    if ($levfile[$fpos+17] -gt 31){ 
+        $Guardians2 = 0
+    }
+    Else{
+        $Guardians2 = $levfile[$fpos+17]
+    }
+    if ($levfile[$fpos+18] -gt 31){ 
+        $Guardians3 = 0
+    }
+    Else{
+        $Guardians3 = $levfile[$fpos+18]
+    }
+    if ($levfile[$fpos+19] -gt 31){ 
+        $Guardians4 = 0
+    }
+    Else{
+        $Guardians4 = $levfile[$fpos+19]
+    }
+    if ($levfile[$fpos+20] -gt 31){ 
+        $Guardians5 = 0
+    }
+    Else{
+        $Guardians5 = $levfile[$fpos+20]
+    }
+    if ($levfile[$fpos+21] -gt 31){ 
+        $Guardians6 = 0
+    }
+    Else{
+        $Guardians6 = $levfile[$fpos+21]
+    }
+    if ($levfile[$fpos+22] -gt 31){ 
+        $Guardians7 = 0
+    }
+    Else{
+        $Guardians7 = $levfile[$fpos+22]
+    }
+    if ($levfile[$fpos+23] -gt 31){ 
+        $Guardians8 = 0
+    }
+    Else{
+        $Guardians8 = $levfile[$fpos+23]
+    }
 
     
     $boolArray = ConvertTo-BooleanArray $KillOnSight 
