@@ -1,7 +1,7 @@
 #Syndicate Wars Level Inspector by Moburma
 
 #VERSION 0.1
-#LAST MODIFIED: 04/06/2023
+#LAST MODIFIED: 28/11/2024
 
 <#
 .SYNOPSIS
@@ -1602,6 +1602,9 @@ function LoadLevel(){
     if($flag2 -eq 16777216){ #Peeps with this flag are invisible on level start
         $row.Invisible = $true
     }
+    if($flag2 -eq 536870912){ #Peeps with this flag are invisible on level start
+        $row.InsideBuilding = $true
+    }
     if($Flag -eq 67108870){ #Peeps with this flag are dead on level start
         $row.Dead = $true
     }
@@ -2207,6 +2210,7 @@ $Datatable = New-Object System.Data.DataTable
 [void]$Datatable.Columns.Add('ObjectLength',[long])
 [void]$Datatable.Columns.Add('Invisible',[boolean])
 [void]$Datatable.Columns.Add('Dead',[boolean])
+[void]$Datatable.Columns.Add('InsideBuilding',[boolean])
 
 $commandTable = New-Object System.Data.DataTable
 
@@ -2945,6 +2949,14 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
                 $datagridview.Rows[$_.RowIndex].Cells[35].Value = ($datagridview.Rows[$_.RowIndex].Cells[35].Value) - 16777216
             }
     }
+    if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'InsideBuilding') { #Update Flag2 value if tickbox is changed
+        if ($datagridview.Rows[$_.RowIndex].Cells[100].Value -eq $true -and $datagridview.Rows[$_.RowIndex].Cells[35].Value -ne 536870912){
+            $datagridview.Rows[$_.RowIndex].Cells[35].Value = ($datagridview.Rows[$_.RowIndex].Cells[35].Value) + 536870912
+        }
+        if ($datagridview.Rows[$_.RowIndex].Cells[100].Value -eq $false -and $datagridview.Rows[$_.RowIndex].Cells[35].Value -ge 536870912){
+            $datagridview.Rows[$_.RowIndex].Cells[35].Value = ($datagridview.Rows[$_.RowIndex].Cells[35].Value) - 536870912
+        }
+}
     if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'Dead') { #Update Flag and State values if tickbox is changed
         if ($datagridview.Rows[$_.RowIndex].Cells[101].Value -eq $true -and $datagridview.Rows[$_.RowIndex].Cells[8].Value -ne 33){
             $datagridview.Rows[$_.RowIndex].Cells[9].Value = 67108870 #set Flag 1
@@ -3036,11 +3048,13 @@ $datagridview.Columns[10].Width = 40
 $datagridview.Columns[11].Width = 40
 $datagridview.Columns[100].Width = 25
 $datagridview.Columns[101].Width = 25
+$datagridview.Columns[102].Width = 25
 
 $datagridview.Columns[5].Visible = $false; #Hide original charactername column
 $datagridview.Columns[7].Visible = $false; #Hide original Vehicletype column
-$datagridview.Columns[100].DisplayIndex = 0
+$datagridview.Columns[100].DisplayIndex = 0 #Put clickable boxes first
 $datagridview.Columns[101].DisplayIndex = 1
+$datagridview.Columns[102].DisplayIndex = 2
 $datagridview.Columns[60].DisplayIndex = 19
 
 $Charactercombo  = @("Invalid","Agent","Zealot", "Unguided Female", "Civ - Briefcase Man", "Civ - White Dress Woman", "Soldier/Mercenary", "Mechanical Spider", "Police", "Unguided Male", "Scientist", "Shady Guy", "Elite Zealot", "Civ - Blonde Woman 1", "Civ - Leather Jacket Man", "Civ - Blonde Woman 2", "Ground Car", "Flying vehicle", "Tank", "Ship", "Moon Mech")
@@ -3293,7 +3307,7 @@ $Relationsbutton.Add_Click({
     $GuardianL = New-Object Windows.Forms.Label
     $GuardianL.Location = New-Object Drawing.Point 10,270
     $GuardianL.Size = New-Object Drawing.Point 70,20
-    $GuardianL.text ="Guardian of"
+    $GuardianL.text ="Guardians"
     $Relationsform.controls.add($GuardianL)
 
     $gx = 80
