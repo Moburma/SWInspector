@@ -24,7 +24,6 @@ $filename = "No File Loaded"
 
 function convert16bitint($Byteone, $Bytetwo) {
    
-
 $converbytes16 = [byte[]]($Byteone,$Bytetwo)
 $converted16 =[bitconverter]::ToInt16($converbytes16,0)
 
@@ -1602,7 +1601,7 @@ function LoadLevel(){
     if($flag2 -eq 16777216){ #Peeps with this flag are invisible on level start
         $row.Invisible = $true
     }
-    if($flag2 -eq 536870912){ #Peeps with this flag are invisible on level start
+    if($flag2 -eq 536870912){ #Peeps with this flag are invisible on level start because they are inside a building
         $row.InsideBuilding = $true
     }
     if($Flag -eq 67108870){ #Peeps with this flag are dead on level start
@@ -2950,10 +2949,10 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
             }
     }
     if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'InsideBuilding') { #Update Flag2 value if tickbox is changed
-        if ($datagridview.Rows[$_.RowIndex].Cells[100].Value -eq $true -and $datagridview.Rows[$_.RowIndex].Cells[35].Value -ne 536870912){
+        if ($datagridview.Rows[$_.RowIndex].Cells[102].Value -eq $true -and $datagridview.Rows[$_.RowIndex].Cells[35].Value -ne 536870912){
             $datagridview.Rows[$_.RowIndex].Cells[35].Value = ($datagridview.Rows[$_.RowIndex].Cells[35].Value) + 536870912
         }
-        if ($datagridview.Rows[$_.RowIndex].Cells[100].Value -eq $false -and $datagridview.Rows[$_.RowIndex].Cells[35].Value -ge 536870912){
+        if ($datagridview.Rows[$_.RowIndex].Cells[102].Value -eq $false -and $datagridview.Rows[$_.RowIndex].Cells[35].Value -ge 536870912){
             $datagridview.Rows[$_.RowIndex].Cells[35].Value = ($datagridview.Rows[$_.RowIndex].Cells[35].Value) - 536870912
         }
 }
