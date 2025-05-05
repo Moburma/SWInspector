@@ -1,11 +1,11 @@
 #Syndicate Wars Level Inspector by Moburma
 
-#VERSION 0.1
-#LAST MODIFIED: 28/11/2024
+#VERSION 0.2
+#LAST MODIFIED: 05/05/2025
 
 <#
 .SYNOPSIS
-   This script can read Syndicate Wars level files (LEV00xxx.DAT) and let users edit and save them back.
+   This script can read Syndicate Wars level files (LEV00lxxx.DAT) and let users edit and save them back.
 
 .DESCRIPTION    
     An editor for Syndicate Wars level files
@@ -900,6 +900,56 @@ $commandgridview.Refresh()
    
 }
 
+function UpdateMap() {
+    # Create a new bitmap and graphics context
+    $bmp = New-Object System.Drawing.Bitmap 256,256
+    $graphics = [System.Drawing.Graphics]::FromImage($bmp)
+
+    # Draw the base map
+    $graphics.DrawImage($global:levimg, 0, 0, 256, 256)
+
+    # Plot entities
+    foreach ($drow in $Datatable) {
+        $x = [Math]::Floor($drow.map_posx / 32768)
+        $y = [Math]::Floor($drow.map_posz / 32768)
+
+        switch -regex ($drow) {
+            { $_.thingtype -eq 3 -and ($_.type -eq 2 -or $_.type -eq 12) } { $colour = 'White'; break }  #Draw Zealot on map
+            { $_.thingtype -eq 3 -and $_.type -eq 1 } { $colour = 'Red'; break }                         #Agent
+            { $_.thingtype -eq 3 -and ($_.type -eq 3 -or $_.type -eq 9) } { $colour = 'Green'; break }   #Unguided
+            { $_.thingtype -eq 3 -and $_.type -eq 6 } { $colour = 'Pink'; break }                        #Soldier
+            { $_.thingtype -eq 3 -and $_.type -eq 8 } { $colour = 'Purple'; break }                      #Police
+            { $_.thingtype -eq 3 -and $_.type -eq 10 } { $colour = 'Yellow'; break }                     #Scientist
+            { $_.thingtype -eq 2 } { $colour = 'Turquoise'; break }                                      #Vehicle
+            default { $colour = 'Gray' }                                                                 #Civilians, etc
+        }
+
+        $bmp.SetPixel($x, $y, $colour)
+    }
+
+    # Draw camera start angle as arrow 
+    #$angleDegrees = ($global:camangle / 256) * 360
+
+    # Convert to radians
+    $angleRadians = $camnumericBox.Value * [Math]::PI / 180
+    $length = 30            # Arrow length
+
+    $startX = 128
+    $startY = 128
+    $endX = [Math]::Round($startX + $length * [Math]::Cos($angleRadians))
+    $endY = [Math]::Round($startY - $length * [Math]::Sin($angleRadians))  # Y axis flipped
+    if ($global:camangon -eq 1 ){
+        $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::Yellow, 2)
+        $pen.CustomEndCap = New-Object System.Drawing.Drawing2D.AdjustableArrowCap(4, 6, $true)
+        $graphics.DrawLine($pen, $startX, $startY, $endX, $endY)
+    }
+
+    # Now assign image and refresh
+    $pictureBox.Image = $bmp
+    $pictureBox.Refresh()
+}
+
+
 function AdvancedMode(){
     if ($datagridview.Columns[0].Visible -eq $false){
         $op = $true
@@ -968,6 +1018,15 @@ function AdvancedMode(){
     $commandgridview.Columns[8].Visible = $op;
     $commandgridview.Columns[15].Visible = $op;
 
+}
+
+function WritePadding($numtopad){
+
+    DO{
+    $outputStream.Write([System.BitConverter]::GetBytes($zerobytes), 0, 1)
+    $numtopad = $numtopad -1
+    }
+    UNTIL ($numtopad -eq 0)
 }
 function SaveFile(){
    
@@ -1235,9 +1294,37 @@ function SaveFile(){
         $outputStream.Write([System.BitConverter]::GetBytes($irow.ItemUniqueid), 0, 2)
     }
     
+    $padfixed = 0
+
     #unknown final bytes to end
     $remainingBytesLength = $levfile.count - $itemsend
-    $outputStream.Write($levfile, $itemsend, $remainingBytesLength)
+    if ($remainingBytesLength -lt 4516){
+        write-host "Truncated level file detected, fixing"
+        
+        $outputStream.Write($levfile, $itemsend, $remainingBytesLength) 
+        $bytesneeded = (4517 - $remainingBytesLength)
+        WritePadding($bytesneeded)
+        write-host "$bytesneeded bytes needed"
+
+        $padfixed = 1
+    }
+    Else{
+    $outputStream.Write($levfile, $itemsend, 4517) #Write rest of file up to camera start angle byte
+    }
+
+    $angleByte = [byte](($camnumericBox.value / 360.0) * 256)
+    write-host $camnumericBox.value 
+    write-host $anglebyte
+    $outputStream.Write([System.BitConverter]::GetBytes($angleByte ), 0, 1)
+
+    if ($padfixed -eq 1){
+        WritePadding(2)
+    }
+    Else{
+    $outputStream.Write($levfile, ($itemsend + 4518), 2)    #write final bytes
+    }
+
+    #$outputStream.Write($levfile, $itemsend, $remainingBytesLength)
     $outputStream.Close()
     
     write-host "Done"
@@ -1473,6 +1560,8 @@ function LoadLevel(){
         $vehicletype = "N/A"
     }
 
+
+    <#!
     #plot map elements
     # note, the map is split into 128 cells comprised of 256 units per cell, so divide by 32768 to bodge into our 256 x 256 map
 
@@ -1502,7 +1591,7 @@ function LoadLevel(){
         $bmp.SetPixel(($map_posx / 32768), ($map_posz / 32768), 'Gray')
     }
 
- 
+    #>
     #Define Thing datatable rows
 
     $row = $datatable.NewRow()  
@@ -1925,6 +2014,16 @@ function LoadLevel(){
 
     $global:itemsend = $fpos
 
+    if ($global:levfile.count -lt ($global:itemsend + 4517)  ){
+        $global:camangle = 0
+    }
+    Else {
+
+        $global:camangle =  $levfile[($global:itemsend + 4517)]
+    }
+
+    $camnumericBox.Value = (($global:camangle / 256) * 360)
+
     if (test-path "$scriptdir/SWMaps/MAP$global:mapNum.png"){
     $mapimgfile = (get-item "$scriptdir/SWMaps/MAP$global:mapNum.png")
     }
@@ -1938,12 +2037,8 @@ function LoadLevel(){
   
     $pictureBox.Image = $levimg
     $pictureBox.Size = New-Object System.Drawing.Size(256,256)
-   
 
-    #New attempt at drawing map
-    $global:graphics=[System.Drawing.Graphics]::FromImage($levimg)
-    $graphics.DrawImage($bmp,0,0,256,256)
-    $picturebox.refresh()
+    UpdateMap
 
     $Levelinfobox.text ="$filename 
 City: $global:cityname
@@ -1981,7 +2076,7 @@ function clearRow(){
 
     $currow = $datagridview.CurrentCell.RowIndex
     $dataGridView.Rows.RemoveAt($currow)
-
+    UpdateMap
 }
 
 function CloneThingRow(){
@@ -2018,6 +2113,8 @@ function CloneThingRow(){
    $lastRow["ThingOffset"] = [int]$previousRow["ThingOffset"] + 1
    }
    $dataTable.AcceptChanges()
+   UpdateMap
+   
 }
 
 function PasteThingCoords(){  #Paste current frozen mouse coordinates into Map X and Z for currently selected Thing to save typing
@@ -2035,6 +2132,7 @@ function PasteThingCoords(){  #Paste current frozen mouse coordinates into Map X
    $y = $global:lastMousePosition.Y
    $datagridview.Rows[$selectedRowView].Cells[14].Value = ($x * 32768) #Update Map X coordinate from mouse X
    $datagridview.Rows[$selectedRowView].Cells[16].Value = ($y * 32768) #Update Map Z coordinate from mouse Y
+   UpdateMap
 }
 function CloneCommandNewRow(){
 
@@ -2898,7 +2996,7 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
                 $datagridview.Rows[$_.RowIndex].Cells[6].Value = 3 #Set for a non-vehicle
             }
             
-
+            UpdateMap
         }
 
     if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'Type') #If updating Type, update CharacterName to match
@@ -2930,6 +3028,7 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
                 $datagridview.Rows[$_.RowIndex].Cells[90].Value = $Chararrays[($datagridview.Rows[$_.RowIndex].Cells[4].Value -1)][13] #Update Maxstamina
 
             }
+            UpdateMap
         }
        
     if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'VehicleType') #If updating VEhicleType, update StartFrame to match
@@ -2973,6 +3072,15 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
       $datagridview.Rows[$_.RowIndex].Cells[18].Value = identifyGroup($datagridview.Rows[$_.RowIndex].Cells[17].Value)
 }
 
+        if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'map_posx') #If updating CharacterName, update Type to match
+        {
+            UpdateMap
+        }
+        if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'map_posz') #If updating CharacterName, update Type to match
+        {
+            UpdateMap
+        }
+ 
 
     }
 
@@ -3098,6 +3206,7 @@ $commandGridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]
         $commandGridview.Rows[$_.RowIndex].Cells[8].Value = 0
         $commandGridview.Rows[$_.RowIndex].Cells[15].Value = 0
     }
+
 
 }
 
@@ -3457,7 +3566,7 @@ $itemsGridview.Columns[7].Width = 60
 advancedmode
 $checkbox = New-Object System.Windows.Forms.CheckBox
 $checkbox.Text = 'Advanced Mode'
-$checkbox.Location = New-Object System.Drawing.Point(150,347)
+$checkbox.Location = New-Object System.Drawing.Point(110,347)
 $checkbox.Size = New-Object System.Drawing.Size(120,20)
 
 # Register the event that triggers when the checkbox is checked or unchecked
@@ -3468,5 +3577,41 @@ $checkbox.Add_CheckStateChanged({
 # Add the checkbox to the form
 $form.Controls.Add($checkbox)
 
+#Show Camera angle arrow on map
+$global:camangon = 0
+$checkbox2 = New-Object System.Windows.Forms.CheckBox
+$checkbox2.Text = 'Map Camera Angle'
+$checkbox2.Location = New-Object System.Drawing.Point(110,370)
+$checkbox2.Size = New-Object System.Drawing.Size(121,20)
+
+# Register the event that triggers when the checkbox is checked or unchecked
+$checkbox2.Add_CheckStateChanged({
+    if ($global:camangon  -eq 0){
+        $global:camangon  = 1
+    }
+    Else{
+        $global:camangon = 0
+    } 
+
+    UpdateMap
+})
+
+# Add the checkbox to the form
+$form.Controls.Add($checkbox2)
+
+$camnumericBox = New-Object System.Windows.Forms.NumericUpDown
+$camnumericBox.Location = New-Object Drawing.Point(231, 370)
+$camnumericBox.Size = New-Object Drawing.Size(40, 20)
+$camnumericBox.Minimum = 0
+$camnumericBox.Maximum = 359
+$camnumericBox.Value = 0
+$camnumericBox.Increment = 1
+
+$form.Controls.Add($camnumericBox)
+
+$camnumericBox.Add_ValueChanged({
+    UpdateMap
+    write-host $camnumericBox.value
+})
 
 $form.ShowDialog()
