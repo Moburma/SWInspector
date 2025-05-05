@@ -1313,8 +1313,7 @@ function SaveFile(){
     }
 
     $angleByte = [byte](($camnumericBox.value / 360.0) * 256)
-    write-host $camnumericBox.value 
-    write-host $anglebyte
+
     $outputStream.Write([System.BitConverter]::GetBytes($angleByte ), 0, 1)
 
     if ($padfixed -eq 1){
@@ -1371,7 +1370,7 @@ function LoadLevel(){
     $global:fileonly = [io.path]::GetFileName("$filename")
     $global:fileonly = $global:fileonly.Substring(0,$global:fileonly.Length-4)
     [string]$global:mapNum = $global:fileonly.substring(1,3)
-    write-host $global:mapNum
+    #write-host $global:mapNum
 
 
     $global:cityName = identifycity($global:mapNum)
@@ -3281,7 +3280,7 @@ $groupsGridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
 
     foreach ($row in $datagridview.Rows ){
         $row.Cells[18].Value = identifyGroup($row.Cells[17].Value)
-        write-host triggered
+
     }
 
 }
@@ -3611,7 +3610,6 @@ $form.Controls.Add($camnumericBox)
 
 $camnumericBox.Add_ValueChanged({
     UpdateMap
-    write-host $camnumericBox.value
 })
 
 $form.ShowDialog()
