@@ -893,6 +893,9 @@ for ($j = 0; $j -lt $numRowsCommandGridView; $j++) {
     if (-not $referencedCommands.ContainsKey($commandNo)) {
         $commandgridview.Rows[$j].DefaultCellStyle.BackColor = [System.Drawing.Color]::Gray
     }
+    Else {
+        $commandgridview.Rows[$j].DefaultCellStyle.BackColor = [System.Drawing.Color]::White
+    }
 }
 
 # Refresh the $commandgridview to show the changes
@@ -911,7 +914,7 @@ function UpdateMap() {
     # Plot entities
     foreach ($drow in $Datatable) {
         $x = [Math]::Floor($drow.map_posx / 32768)
-        $y = [Math]::Floor($drow.map_posz / 32768)
+        $y = [Math]::Floor(256 - ($drow.map_posz / 32768))
 
         switch -regex ($drow) {
             { $_.thingtype -eq 3 -and ($_.type -eq 2 -or $_.type -eq 12) } { $colour = 'White'; break }  #Draw Zealot on map
@@ -1559,38 +1562,6 @@ function LoadLevel(){
         $vehicletype = "N/A"
     }
 
-
-    <#!
-    #plot map elements
-    # note, the map is split into 128 cells comprised of 256 units per cell, so divide by 32768 to bodge into our 256 x 256 map
-
-    if ( ($thingtype -eq 3 -and $type -eq 2) -or ($thingtype -eq 3 -and $type -eq 12)){ #Zealot map plot
-        $bmp.SetPixel(($map_posx / 32768), ($map_posz / 32768), 'White')
-    }
-    Elseif ($thingtype -eq 3 -and $type -eq 1  ){ #Agent map plot
-        $bmp.SetPixel(($map_posx / 32768), ($map_posz / 32768), 'Red')
-    }
-    Elseif ($thingtype -eq 3 -and $type -eq 3 -or $type -eq 9  ){ #Unguided F+M map plot
-        $bmp.SetPixel(($map_posx / 32768), ($map_posz / 32768), 'Green')
-    }
-    Elseif ($thingtype -eq 3 -and $type -eq 6  ){ #Soldier map plot
-        $bmp.SetPixel(($map_posx / 32768), ($map_posz / 32768), 'Pink')
-    }
-    Elseif ($thingtype -eq 3 -and $type -eq 8  ){ #Police map plot
-        $bmp.SetPixel(($map_posx / 32768), ($map_posz / 32768), 'Purple')
-    }
-    Elseif ($thingtype -eq 3 -and $type -eq 10  ){ #Scientist map plot
-        $bmp.SetPixel(($map_posx / 32768), ($map_posz / 32768), 'Yellow')
-    }
-    Elseif ($thingtype -eq 2 ){ #vehicle map plot
-        $bmp.SetPixel(($map_posx / 32768), ($map_posz / 32768), 'Turquoise')
-    }
-    
-    Else{
-        $bmp.SetPixel(($map_posx / 32768), ($map_posz / 32768), 'Gray')
-    }
-
-    #>
     #Define Thing datatable rows
 
     $row = $datatable.NewRow()  
@@ -2130,8 +2101,26 @@ function PasteThingCoords(){  #Paste current frozen mouse coordinates into Map X
    $x = $global:lastMousePosition.X
    $y = $global:lastMousePosition.Y
    $datagridview.Rows[$selectedRowView].Cells[14].Value = ($x * 32768) #Update Map X coordinate from mouse X
-   $datagridview.Rows[$selectedRowView].Cells[16].Value = ($y * 32768) #Update Map Z coordinate from mouse Y
+   $datagridview.Rows[$selectedRowView].Cells[16].Value = ((256 - $y) * 32768) #Update Map Z coordinate from mouse Y
    UpdateMap
+}
+
+function PasteComCoords(){  #Paste current frozen mouse coordinates into Map X and Z for currently selected Command to save typing
+    if ($CommandGridView.SelectedCells.Count -eq 0) {
+        [System.Windows.Forms.MessageBox]::Show("Please select a Command to paste coords to.", "Information", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        return
+    }
+
+   # Get the selected DataRowView
+   $selectedRowView = $CommandGridView.CurrentCell.RowIndex
+
+    #write-host "row is $selectedRowView"
+
+   $x = $global:lastMousePosition.X
+   $y = $global:lastMousePosition.Y
+   $CommandGridView.Rows[$selectedRowView].Cells[3].Value = ($x * 128) #Update Map X coordinate from mouse X
+   $CommandGridView.Rows[$selectedRowView].Cells[5].Value = ((256 - $y) * 128) #Update Map Z coordinate from mouse Y
+
 }
 function CloneCommandNewRow(){
 
@@ -2422,7 +2411,7 @@ for ($i = 0; $i -lt 8; $i++) {
 
 [void][reflection.assembly]::LoadWithPartialName( "System.Windows.Forms")
 $form = New-Object Windows.Forms.Form
-$form.text = "SWInspector  v0.1  By Moburma"
+$form.text = "SWInspector  v0.2  By Moburma"
 $Form.Location= New-Object System.Drawing.Size(100,100)
 $Form.Size= New-Object System.Drawing.Size(1920,900)
 
@@ -2466,8 +2455,8 @@ $pictureBox.Add_MouseDown({  #Mouse click to freeze map coordinates
 
 function UpdateCoordinatesLabel($x, $y) {
 
-    $mousecoordlabel.Text = "T:  X: $($x * 32768), Z: $($y * 32768)
-O:  X: $($x * 128),      Z: $($y * 128)"
+    $mousecoordlabel.Text = "T:  X: $($x * 32768), Z: $((256 - $y) * 32768)
+O:  X: $($x * 128),      Z: $((256 - $y) * 128)"
 
 }
 
@@ -2886,7 +2875,7 @@ $PasteThingCo.Add_Click($PasteThingCo_Click)
 $CloneNewCommand_click = {CloneCommandNewRow}
 
 $CloneNewCommand = New-Object System.Windows.Forms.Button
-$CloneNewCommand.Location = New-Object System.Drawing.Size(110,490)
+$CloneNewCommand.Location = New-Object System.Drawing.Size(110,520)
 $CloneNewCommand.Size = New-Object System.Drawing.Size(150,23)
 $CloneNewCommand.Text = "Clone To New Command"
 $Form.Controls.Add($CloneNewCommand)
@@ -2896,11 +2885,21 @@ $CloneNewCommand.Add_Click($CloneNewCommand_Click)
 $CloneCommand_click = {CloneCommandRow}
 
 $CloneCommand = New-Object System.Windows.Forms.Button
-$CloneCommand.Location = New-Object System.Drawing.Size(10,490) 
+$CloneCommand.Location = New-Object System.Drawing.Size(10,520) 
 $CloneCommand.Size = New-Object System.Drawing.Size(100,23)
 $CloneCommand.Text = "Clone Command"
 $Form.Controls.Add($CloneCommand)
 $CloneCommand.Add_Click($CloneCommand_Click)
+
+$PasteComCo_click = {PasteComCoords}
+
+$PasteComCo = New-Object System.Windows.Forms.Button
+$PasteComCo.Location = New-Object System.Drawing.Size(10,550)
+$PasteComCo.Size = New-Object System.Drawing.Size(110,23)
+$PasteComCo.Text = "Paste Com Coord"
+$Form.Controls.Add($PasteComCo)
+$PasteComCo.Add_Click($PasteComCo_Click)
+
 
 $StepComForward_click = {StepCommandForward}
 
@@ -3028,6 +3027,11 @@ $datagridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]{
 
             }
             UpdateMap
+        }
+
+    if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'ComHead') #If updating Comhead, update command used rows in case this one was unused before
+        {
+            MarkUnusedRows
         }
        
     if ($datagridview.Columns[$_.ColumnIndex].Name -eq 'VehicleType') #If updating VEhicleType, update StartFrame to match
@@ -3206,6 +3210,12 @@ $commandGridview_CellEndEdit=[System.Windows.Forms.DataGridViewCellEventHandler]
         $commandGridview.Rows[$_.RowIndex].Cells[15].Value = 0
     }
 
+    if ($commandGridview.Columns[$_.ColumnIndex].Name -eq 'Next') #If linking in a potentially unused command, update markings for unused rows
+    {   
+        MarkUnusedRows
+    }
+
+    
 
 }
 
