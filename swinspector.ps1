@@ -1,7 +1,7 @@
 #Syndicate Wars Level Inspector by Moburma
 
-#VERSION 0.2
-#LAST MODIFIED: 05/05/2025
+#VERSION 0.3
+#LAST MODIFIED: 12/05/2025
 
 <#
 .SYNOPSIS
@@ -1311,7 +1311,11 @@ function SaveFile(){
 
         $padfixed = 1
     }
-    Else{
+    elseif ($global:camhack -eq 1) {
+      $outputStream.Write($levfile, $itemsend, (($levfile.count - $itemsend)- 3)) #Write rest of file up to camera start angle byte
+    
+    }
+    Elseif ($global:camhack -eq 0) {
     $outputStream.Write($levfile, $itemsend, 4517) #Write rest of file up to camera start angle byte
     }
 
@@ -1323,7 +1327,7 @@ function SaveFile(){
         WritePadding(2)
     }
     Else{
-    $outputStream.Write($levfile, ($itemsend + 4518), 2)    #write final bytes
+    $outputStream.Write($levfile, ($levfile.count - 2), 2)    #write final bytes
     }
 
     #$outputStream.Write($levfile, $itemsend, $remainingBytesLength)
@@ -1983,13 +1987,22 @@ function LoadLevel(){
     }
 
     $global:itemsend = $fpos
+    $global:camhack = 0
 
-    if ($global:levfile.count -lt ($global:itemsend + 4517)  ){
+    if ($global:levfile.count -lt ($global:itemsend + 4517)  ){  #check if level file is truncated and set camera to 0 if so
         $global:camangle = 0
     }
     Else {
 
         $global:camangle =  $levfile[($global:itemsend + 4517)]
+    }
+
+    if ($global:camangle -eq 0){
+        if ($levfile[($levfile.count -3)] -gt 0){
+            $global:camangle = $levfile[($levfile.count -3)]
+            $global:camhack = 1
+        }
+
     }
 
     $camnumericBox.Value = (($global:camangle / 256) * 360)
@@ -2122,6 +2135,25 @@ function PasteComCoords(){  #Paste current frozen mouse coordinates into Map X a
    $CommandGridView.Rows[$selectedRowView].Cells[5].Value = ((256 - $y) * 128) #Update Map Z coordinate from mouse Y
 
 }
+
+function PasteComCoords2(){  #Paste current frozen mouse coordinates into Map X and Z for currently selected Command to save typing
+    if ($CommandGridView.SelectedCells.Count -eq 0) {
+        [System.Windows.Forms.MessageBox]::Show("Please select a Command to paste coords to.", "Information", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        return
+    }
+
+   # Get the selected DataRowView
+   $selectedRowView = $CommandGridView.CurrentCell.RowIndex
+
+    #write-host "row is $selectedRowView"
+
+   $x = $global:lastMousePosition.X
+   $y = $global:lastMousePosition.Y
+   $CommandGridView.Rows[$selectedRowView].Cells[9].Value = ($x * 128) #Update Map X coordinate from mouse X
+   $CommandGridView.Rows[$selectedRowView].Cells[11].Value = ((256 - $y) * 128) #Update Map Z coordinate from mouse Y
+
+}
+
 function CloneCommandNewRow(){
 
     if ($CommandGridView.SelectedCells.Count -eq 0) {
@@ -2411,7 +2443,7 @@ for ($i = 0; $i -lt 8; $i++) {
 
 [void][reflection.assembly]::LoadWithPartialName( "System.Windows.Forms")
 $form = New-Object Windows.Forms.Form
-$form.text = "SWInspector  v0.2  By Moburma"
+$form.text = "SWInspector  v0.3  By Moburma"
 $Form.Location= New-Object System.Drawing.Size(100,100)
 $Form.Size= New-Object System.Drawing.Size(1920,900)
 
@@ -2900,6 +2932,14 @@ $PasteComCo.Text = "Paste Com Coord"
 $Form.Controls.Add($PasteComCo)
 $PasteComCo.Add_Click($PasteComCo_Click)
 
+$PasteComCo2_click = {PasteComCoords2}
+
+$PasteComCo2 = New-Object System.Windows.Forms.Button
+$PasteComCo2.Location = New-Object System.Drawing.Size(120,550)
+$PasteComCo2.Size = New-Object System.Drawing.Size(115,23)
+$PasteComCo2.Text = "Paste Com Coord 2"
+$Form.Controls.Add($PasteComCo2)
+$PasteComCo2.Add_Click($PasteComCo2_Click)
 
 $StepComForward_click = {StepCommandForward}
 
