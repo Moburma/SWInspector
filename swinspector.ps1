@@ -930,6 +930,14 @@ function UpdateMap() {
         $bmp.SetPixel($x, $y, $colour)
     }
 
+      if ($dataGridView.SelectedCells.Count -eq 1) {
+         $bmp.SetPixel([Math]::Floor($datatable.Rows[$datagridview.CurrentCell.RowIndex].map_posx / 32768), [Math]::Floor(256 - ($datatable.Rows[$datagridview.CurrentCell.RowIndex].map_posz / 32768)), 'orange')
+         $myrow = $datagridview.CurrentCell.RowIndex
+         $myx = [Math]::Floor($datatable.Rows[$datagridview.CurrentCell.RowIndex].map_posx / 32768)
+         $myy = [Math]::Floor(256 - ($datatable.Rows[$datagridview.CurrentCell.RowIndex].map_posz / 32768))
+         write-host "ran row $myrow $myx, $myy"
+    }
+
     # Draw camera start angle as arrow 
     #$angleDegrees = ($global:camangle / 256) * 360
 
@@ -3206,6 +3214,7 @@ $datagridview.Columns[100].DisplayIndex = 0 #Put clickable boxes first
 $datagridview.Columns[101].DisplayIndex = 1
 $datagridview.Columns[102].DisplayIndex = 2
 $datagridview.Columns[60].DisplayIndex = 19
+$datagridview.Columns[41].DisplayIndex = 21
 
 $Charactercombo  = @("Invalid","Agent","Zealot", "Unguided Female", "Civ - Briefcase Man", "Civ - White Dress Woman", "Soldier/Mercenary", "Mechanical Spider", "Police", "Unguided Male", "Scientist", "Shady Guy", "Elite Zealot", "Civ - Blonde Woman 1", "Civ - Leather Jacket Man", "Civ - Blonde Woman 2", "Ground Car", "Flying vehicle", "Tank", "Ship", "Moon Mech")
 
