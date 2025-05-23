@@ -935,7 +935,7 @@ function UpdateMap() {
          $myrow = $datagridview.CurrentCell.RowIndex
          $myx = [Math]::Floor($datatable.Rows[$datagridview.CurrentCell.RowIndex].map_posx / 32768)
          $myy = [Math]::Floor(256 - ($datatable.Rows[$datagridview.CurrentCell.RowIndex].map_posz / 32768))
-         write-host "ran row $myrow $myx, $myy"
+
     }
 
     # Draw camera start angle as arrow 
@@ -972,7 +972,7 @@ function AdvancedMode(){
     $datagridview.Columns[1].Visible = $op;
     $datagridview.Columns[2].Visible = $op;
     $datagridview.Columns[3].Visible = $op;
-    $datagridview.Columns[0].Visible = $op;
+    $datagridview.Columns[8].Visible = $op;
     $datagridview.Columns[9].Visible = $op;
     $datagridview.Columns[10].Visible = $op;
     $datagridview.Columns[11].Visible = $op;
@@ -981,6 +981,10 @@ function AdvancedMode(){
     $datagridview.Columns[23].Visible = $op;
     $datagridview.Columns[24].Visible = $op;
     $datagridview.Columns[25].Visible = $op;
+    $datagridview.Columns[26].Visible = $op;
+    $datagridview.Columns[27].Visible = $op;
+    $datagridview.Columns[28].Visible = $op;
+    $datagridview.Columns[31].Visible = $op;
     $datagridview.Columns[32].Visible = $op;
     $datagridview.Columns[33].Visible = $op;
     $datagridview.Columns[34].Visible = $op;
@@ -995,6 +999,8 @@ function AdvancedMode(){
     $datagridview.Columns[47].Visible = $op;
     $datagridview.Columns[48].Visible = $op;
     $datagridview.Columns[49].Visible = $op;
+    $datagridview.Columns[50].Visible = $op;
+    $datagridview.Columns[51].Visible = $op;
     $datagridview.Columns[52].Visible = $op;
     $datagridview.Columns[53].Visible = $op;
     $datagridview.Columns[54].Visible = $op;
@@ -1010,7 +1016,6 @@ function AdvancedMode(){
     $datagridview.Columns[66].Visible = $op;
     $datagridview.Columns[67].Visible = $op;
     $datagridview.Columns[68].Visible = $op;
-    $datagridview.Columns[69].Visible = $op;
     $datagridview.Columns[70].Visible = $op;
     $datagridview.Columns[71].Visible = $op;
     $datagridview.Columns[73].Visible = $op;
@@ -1022,6 +1027,7 @@ function AdvancedMode(){
     $datagridview.Columns[79].Visible = $op;
     $datagridview.Columns[81].Visible = $op;
     $datagridview.Columns[84].Visible = $op;
+    $datagridview.Columns[85].Visible = $op;    
     $datagridview.Columns[86].Visible = $op;
     $datagridview.Columns[87].Visible = $op;
     $datagridview.Columns[88].Visible = $op;
@@ -3215,6 +3221,10 @@ $datagridview.Columns[101].DisplayIndex = 1
 $datagridview.Columns[102].DisplayIndex = 2
 $datagridview.Columns[60].DisplayIndex = 19
 $datagridview.Columns[41].DisplayIndex = 21
+$datagridview.Columns[83].DisplayIndex = 23
+$datagridview.Columns[82].DisplayIndex = 24
+$datagridview.Columns[69].DisplayIndex = 31
+$datagridview.Columns[44].DisplayIndex = 33
 
 $Charactercombo  = @("Invalid","Agent","Zealot", "Unguided Female", "Civ - Briefcase Man", "Civ - White Dress Woman", "Soldier/Mercenary", "Mechanical Spider", "Police", "Unguided Male", "Scientist", "Shady Guy", "Elite Zealot", "Civ - Blonde Woman 1", "Civ - Leather Jacket Man", "Civ - Blonde Woman 2", "Ground Car", "Flying vehicle", "Tank", "Ship", "Moon Mech")
 
