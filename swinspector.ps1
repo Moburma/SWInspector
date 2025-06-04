@@ -942,13 +942,13 @@ function UpdateMap() {
     #$angleDegrees = ($global:camangle / 256) * 360
 
     # Convert to radians
-    $angleRadians = $camnumericBox.Value * [Math]::PI / 180
+    $angleRadians = ($camnumericBox.Value +90) * [Math]::PI / 180
     $length = 30            # Arrow length
 
     $startX = 128
     $startY = 128
-    $endX = [Math]::Round($startX + $length * [Math]::Cos($angleRadians))
-    $endY = [Math]::Round($startY - $length * [Math]::Sin($angleRadians))  # Y axis flipped
+    $endX = [Math]::Round($startX - $length * [Math]::Cos($angleRadians)) 
+    $endY = [Math]::Round($startY - $length * [Math]::Sin($angleRadians))  
     if ($global:camangon -eq 1 ){
         $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::Yellow, 2)
         $pen.CustomEndCap = New-Object System.Drawing.Drawing2D.AdjustableArrowCap(4, 6, $true)
